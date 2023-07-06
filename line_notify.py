@@ -1,7 +1,6 @@
 import os
 import shutil
 from kucoin.client import Market
-from matplotlib.font_manager import FontProperties
 import matplotlib.pyplot as plt
 import mplfinance as mpf
 import pandas as pd
