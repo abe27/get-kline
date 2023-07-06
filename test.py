@@ -1,51 +1,110 @@
-import pandas as pd
+import os
+import shutil
+import pytz
+import requests
+from datetime import datetime, timedelta
 import matplotlib.pyplot as plt
 import mplfinance as mpf
+import pandas as pd
 import talib
 
-# Generate sample OHLC data
-ohlc_data = pd.DataFrame({'date': pd.date_range(start='2023-01-01', periods=100),
-                          'open': [100, 105, 110, 115, 120] * 20,
-                          'high': [120, 125, 130, 135, 140] * 20,
-                          'low': [90, 95, 100, 105, 110] * 20,
-                          'close': [115, 120, 125, 130, 135] * 20})
 
-# Convert the date column to datetime type
-ohlc_data['date'] = pd.to_datetime(ohlc_data['date'])
+def check_rsi(df):
+    df['rsi'] = talib.RSI(df['Close'])
+    df['overbought'] = df['rsi'] > 70
+    df['oversold'] = df['rsi'] < 30
+    return df
 
-# Set the date column as the index
-ohlc_data.set_index('date', inplace=True)
 
-# Calculate MACD values
-macd, macd_signal, _ = talib.MACD(ohlc_data['close'])
+def check_macd_trend(df):
+    df['macd'], _, _ = talib.MACD(df['Close'])
+    df['macd_trend'] = df['macd'].diff() > 0
+    return df
 
-# Create a DataFrame for MACD data
-macd_data = pd.DataFrame({'macd': macd, 'macd_signal': macd_signal}, index=ohlc_data.index)
+# def check_macd_crossover(df):
+#     df['macd'], df['macd_signal'], _ = talib.MACD(df['Close'])
+#     df['macd_crossover'] = ((df['macd'] > df['macd_signal']) & (df['macd'].shift() <= df['macd_signal'].shift()))
+#     return df
 
-# Create a figure and subplots
-fig, (ax1, ax2) = plt.subplots(nrows=2, ncols=1, figsize=(12, 8), sharex=True)
 
-# Plot the candlestick chart in the first subplot
-mpf.plot(ohlc_data, ax=ax1, type='candle', style='binance')
+def check_macd_crossover(df):
+    df['macd'], df['macd_signal'], _ = talib.MACD(df['Close'])
+    df['macd_crossover'] = ((df['macd'] > df['macd_signal']) & (
+        df['macd'].shift() <= df['macd_signal'].shift()))
+    df['macd_crossover_up'] = ((df['macd'] > df['macd_signal']) & (
+        df['macd'].shift() <= df['macd_signal'].shift()))
+    df['macd_crossover_down'] = ((df['macd'] < df['macd_signal']) & (
+        df['macd'].shift() >= df['macd_signal'].shift()))
+    return df
 
-# Set axis labels and title for the first subplot
-ax1.set_ylabel('Price')
-ax1.set_title('Candlestick Chart')
+# resolution	string	Chart resolution (1, 5, 15, 60, 240, 1D)
+timeFrame = "60"
+symbols  = ["BTC", "ETH", "KUB", "OP", "APE", "BNB","DOGE", "XRP", "ADA", "IOST", "MANA"]
 
-# Plot the MACD in the second subplot
-ax2.plot(macd_data.index, macd_data['macd'], label='MACD')
-ax2.plot(macd_data.index, macd_data['macd_signal'], label='Signal')
+if __name__ == "__main__":
+    for symbol in symbols:
+        dte = datetime.now()
+        fromDte = int((dte - timedelta(hours=100)).strftime("%s"))
+        toDte = int(dte.strftime("%s"))
 
-# Set axis labels and title for the second subplot
-ax2.set_xlabel('Date')
-ax2.set_ylabel('MACD')
-ax2.set_title('MACD Indicator')
+        url = f"https://api.bitkub.com/tradingview/history?symbol={symbol}_THB&resolution={timeFrame}&from={fromDte}&to={toDte}"
+        res = requests.request("GET", url)
+        obj = res.json()
 
-# Show the legend
-ax2.legend()
+        klines = []
+        x = len(obj["c"])
+        for i in range(x):
+            klines.append([obj['t'][i],obj['o'][i],obj['c'][i],obj['h'][i],obj['l'][i],obj['v'][i]])
 
-# Adjust the spacing between subplots
-plt.tight_layout()
+        df = pd.DataFrame(klines, columns=['Date', 'Open', 'Close', 'High', 'Low', 'Volume'])
+        df['Date'] = df['Date'].astype(float)
+        df['Open'] = df['Open'].astype(float)
+        df['Close'] = df['Close'].astype(float)
+        df['High'] = df['High'].astype(float)
+        df['Low'] = df['Low'].astype(float)
+        df['Volume'] = df['Volume'].astype(float)
 
-# Show the plot
-plt.show()
+        # Convert the 'Date' column to datetime format
+        try:
+            df['Date'] = pd.to_datetime(df['Date'] * 1000, unit='ms')
+        except ValueError:
+            df['Date'] = pd.to_datetime(df['Date'] * 1000, unit='s')
+
+        # Set the timezone for the 'Date' column
+        timezone = 'Asia/Bangkok'
+        df['Date'] = df['Date'].dt.tz_localize(
+            pytz.utc).dt.tz_convert(timezone)
+        # # Format datetime column as desired (e.g., 'YYYY-MM-DD HH:MM:SS')
+        # df['Date'] = df['Date'].dt.strftime('%Y-%m-%d %H:%M:%S')
+        df.set_index('Date', inplace=True)
+        df = check_macd_crossover(df)
+        df = check_macd_trend(df)
+        df = check_rsi(df)
+
+
+        ## Create Folder
+        try:
+            shutil.rmtree(f"export/{symbol}")
+        except:
+            pass
+        try:
+            os.makedirs(f"export/{symbol}")
+        except:
+            pass
+
+        df.to_csv(f'export/{symbol}/{symbol}.csv')
+        # # Sort the DataFrame by the date column
+        # df = df.iloc[::-1]
+        # Calculate MACD values
+        ema_12 = df['Close'].ewm(span=12, adjust=False).mean()
+        ema_26 = df['Close'].ewm(span=26, adjust=False).mean()
+        ema_99 = df['Close'].ewm(span=99, adjust=False).mean()
+        # Plot the candlestick chart with EMA lines
+        fig, ax = mpf.plot(df, type='candle', style='binance', 
+                           addplot=[
+                               mpf.make_addplot(ema_12, color='blue'),
+                               mpf.make_addplot(ema_26, color='red'),
+                               mpf.make_addplot(ema_99, color='yellow')
+                            ], returnfig=True)
+        candlePath = f"export/{symbol}/{symbol}_CANDLESTICK.png"
+        plt.savefig(candlePath)
