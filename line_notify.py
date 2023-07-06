@@ -1,3 +1,4 @@
+from datetime import datetime
 import os
 import shutil
 from kucoin.client import Market
@@ -7,9 +8,11 @@ import pandas as pd
 import pytz
 import talib
 import requests
+import logging
 
 client = Market(url='https://openapi-v2.kucoin.com')
-
+LOG_FILENAME = datetime.now().strftime('logfile_%H_%M_%S_%d_%m_%Y.log')
+logging.basicConfig(filename=LOG_FILENAME,level=logging.DEBUG)   
 
 def send_line_notification(message, image_path):
     line_token = 'BfTqtBO0kuo5mqneTdBoe5ktUAnxYrHIoaWhLRcBTwj'
@@ -59,15 +62,31 @@ def check_macd_crossover(df):
         df['macd'].shift() >= df['macd_signal'].shift()))
     return df
 
-
 # get symbol kline
 # Type of candlestick patterns: 1min, 3min, 5min, 15min, 30min, 1hour, 2hour, 4hour, 6hour, 8hour, 12hour, 1day, 1week
 timeFrame = "4hour"
-symbols = ["BTC", "ETH","XRP", "LTC", "BCH", "KCS", "BNB", "SOL", "XMR", "MATIC","ADA", "AAVE", "APE", "MANA", "SAND", "AXS", "DOGE", "LINK", "GRT","ARB"]
+# symbols = ["BTC", "ETH","XRP", "LTC", "BCH", "KCS", "BNB", "SOL", "XMR", "MATIC","ADA", "AAVE", "APE", "MANA", "SAND", "AXS", "DOGE", "LINK", "GRT","ARB"]
 # symbols = ["BTC", "ETH","XRP","LTC", "BCH", "KCS", "BNB",]
 
+def get_martket():
+    currencies = client.get_currencies()
+    docs = []
+    i = 1
+    for s in currencies:
+        if len(s["contractAddress"]) > 0:
+            # print(s)
+            print(f'{i} => {s["name"]}')
+            docs.append(s["name"])
+            i += 1
+    return docs
+
+
 if __name__ == '__main__':
+    logging.info(f'Forecasting Job Started...')
+    symbols = get_martket()
+    symbols.sort()
     for symbol in symbols:
+        logging.debug(f'{symbol} method started...')
         try:
             klines = client.get_kline(f'{symbol}-USDT', timeFrame)
             if klines:
@@ -206,3 +225,6 @@ if __name__ == '__main__':
 
         except Exception as e:
             print(e)
+            logging.error(str(e))
+
+    logging.info(f'Forecasting Job Started...')
