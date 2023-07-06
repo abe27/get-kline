@@ -75,7 +75,7 @@ def get_martket():
     for s in currencies:
         if len(s["contractAddress"]) > 0:
             # print(s)
-            print(f'{i} => {s["name"]}')
+            # print(f'{i} => {s["name"]}')
             docs.append(s["name"])
             i += 1
     return docs
@@ -155,7 +155,7 @@ if __name__ == '__main__':
                     current_trend_direction = 'Downward'
 
                 msg = f'เหรียญ {symbol}\nกำลังอยู่ในช่วง: {crossover_direction}\nเทรน: {current_trend_direction}\nRSI Level: {rsi_level}\nRSI ปัจจุบัน: {current_rsi:.2f}\nTimeframe: {timeFrame}'
-                logging.debug(msg)
+                logging.debug(f'เหรียญ {symbol} กำลังอยู่ในช่วง: {crossover_direction} เทรน: {current_trend_direction} RSI Level: {rsi_level} RSI ปัจจุบัน: {current_rsi:.2f} Timeframe: {timeFrame}')
                 if crossover_direction != "-":
                     send_line_notification(msg, None)
                     # Check folder exits!
