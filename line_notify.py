@@ -62,7 +62,7 @@ def check_macd_crossover(df):
 
 # get symbol kline
 # Type of candlestick patterns: 1min, 3min, 5min, 15min, 30min, 1hour, 2hour, 4hour, 6hour, 8hour, 12hour, 1day, 1week
-timeFrame = "1hour"
+timeFrame = "4hour"
 symbols = ["BTC", "ETH","XRP", "LTC", "BCH", "KCS", "BNB", "SOL", "XMR", "MATIC","ADA", "AAVE", "APE", "MANA", "SAND", "AXS", "DOGE", "LINK", "GRT","ARB"]
 # symbols = ["BTC", "ETH","XRP","LTC", "BCH", "KCS", "BNB",]
 
