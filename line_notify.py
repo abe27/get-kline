@@ -86,7 +86,6 @@ if __name__ == '__main__':
     symbols = get_martket()
     symbols.sort()
     for symbol in symbols:
-        logging.debug(f'{symbol} method started...')
         try:
             klines = client.get_kline(f'{symbol}-USDT', timeFrame)
             if klines:
@@ -156,7 +155,7 @@ if __name__ == '__main__':
                     current_trend_direction = 'Downward'
 
                 msg = f'เหรียญ {symbol}\nกำลังอยู่ในช่วง: {crossover_direction}\nเทรน: {current_trend_direction}\nRSI Level: {rsi_level}\nRSI ปัจจุบัน: {current_rsi:.2f}\nTimeframe: {timeFrame}'
-                print(msg)
+                logging.debug(msg)
                 if crossover_direction != "-":
                     send_line_notification(msg, None)
                     # Check folder exits!
