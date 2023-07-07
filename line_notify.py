@@ -163,8 +163,49 @@ def main():
     logging.info(f'Forecasting Job Stoped...')
 
 def update_price():
-    print(f"update price")
+    sbDB = supabase.table("assets").select("*").eq('exchange','kucoin').eq("status", True).execute()
+    for r in sbDB.data:
+        symbol = r['symbol']
+        klines = client.get_kline(f'{symbol}-USDT', timeFrame)
+        if klines:
+            df = pd.DataFrame(klines, columns=[
+                              'Date', 'Open', 'Close', 'High', 'Low', 'Volume', 'Turn Over'])
+            df['Date'] = df['Date'].astype(float)
+            df['Open'] = df['Open'].astype(float)
+            df['Close'] = df['Close'].astype(float)
+            df['High'] = df['High'].astype(float)
+            df['Low'] = df['Low'].astype(float)
+            df['Volume'] = df['Volume'].astype(float)
+            df['Turn Over'] = df['Turn Over'].astype(float)
+            # Convert the 'Date' column to datetime format
+            try:
+                df['Date'] = pd.to_datetime(df['Date'] * 1000, unit='ms')
+            except ValueError:
+                df['Date'] = pd.to_datetime(df['Date'] * 1000, unit='s')
+            # Set the timezone for the 'Date' column
+            timezone = 'Asia/Bangkok'
+            df['Date'] = df['Date'].dt.tz_localize(
+                pytz.utc).dt.tz_convert(timezone)
+            # # Format datetime column as desired (e.g., 'YYYY-MM-DD HH:MM:SS')
+            # df['Date'] = df['Date'].dt.strftime('%Y-%m-%d %H:%M:%S')
+            df.set_index('Date', inplace=True)
+            df = check_rsi(df)
+            # Check RSI levels
+            current_rsi = df['rsi'].iloc[-1]
+            is_overbought = df['overbought'].iloc[-1]
+            
+            isActive = True
+            if is_overbought:
+                isActive = False
+                
+            url = f"https://openapi-v2.kucoin.com/api/v1/market/stats?symbol={symbol}-USDT"
+            res = requests.request("GET", url)
+            data = res.json()
+            lastPrice = data["data"]["last"]
+            sbDB = supabase.table("assets").update({"status": isActive, "last_price": lastPrice, "updated_at": "now()"}).eq("id",r["id"]).execute()
+
+    # print(f"update price")
 
 if __name__ == '__main__':
-    # main()
+    main()
     update_price()
