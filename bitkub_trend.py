@@ -9,15 +9,18 @@ import talib
 import requests
 import logging
 
-EXPORT_DIR="export/bitkub"
+EXPORT_DIR="bitkub/export"
 try:
-    # shutil.rmtree(EXPORT_DIR)
-    os.makedirs(EXPORT_DIR)
+    shutil.rmtree(EXPORT_DIR)
 except:
     pass
 
+try:
+    os.makedirs(EXPORT_DIR)
+except:
+    pass
 LOG_FILENAME = datetime.now().strftime('bitkub_logfile_%H_%M_%S_%d_%m_%Y.log')
-logging.basicConfig(filename=f"export/{LOG_FILENAME}",level=logging.DEBUG)   
+logging.basicConfig(filename=f"{EXPORT_DIR}/{LOG_FILENAME}",level=logging.DEBUG)   
 
 def send_line_notification(message, image_path):
     line_token = 'jeCy5PHmuP5cBDQz74LvCxV0pkiGEBrtYgXvS9RBIhT'
@@ -57,11 +60,6 @@ def get_symbols():
     
     return symbols
 if __name__ == '__main__':
-    try:
-        # shutil.rmtree(EXPORT_DIR)
-        os.makedirs(EXPORT_DIR)
-    except:
-        pass
     logging.info(f'Forecasting Job Started...')
     symbols = get_symbols()
     symbols.sort()
@@ -119,37 +117,31 @@ if __name__ == '__main__':
                 msg = f'เหรียญ {symbol}\nRSI Level: {rsi_level}\nRSI ปัจจุบัน: {current_rsi:.2f}\nTimeframe: {timeFrame}'
                 logging.debug(f'เหรียญ {symbol} RSI Level: {rsi_level} RSI ปัจจุบัน: {current_rsi:.2f} Timeframe: {timeFrame}')
                 
+                if is_oversold:
+                    # # Sort the DataFrame by the date column
+                    df = df.iloc[::-1]
+                    # Calculate MACD values
+                    emaShort = df['Close'].ewm(span=5, adjust=False).mean()
+                    emaMedium = df['Close'].ewm(span=10, adjust=False).mean()
+                    emaLong = df['Close'].ewm(span=30, adjust=False).mean()
+                    # Plot the candlestick chart with EMA lines
+                    fig, ax = mpf.plot(df, type='candle', style='binance', addplot=[
+                                mpf.make_addplot(emaShort, color='blue'),
+                                mpf.make_addplot(emaMedium, color='red'),
+                                mpf.make_addplot(emaLong, color='orange')
+                                ], returnfig=True)
+                    
+                    plt.title(f'{symbol} Candlestick')
+                    candlePath = f"{EXPORT_DIR}/{symbol}/{symbol}_CANDLESTICK.png"
 
-                # # Sort the DataFrame by the date column
-                # df = df.iloc[::-1]
-                # Calculate MACD values
-                emaShort = df['Close'].ewm(span=5, adjust=False).mean()
-                emaMedium = df['Close'].ewm(span=10, adjust=False).mean()
-                emaLong = df['Close'].ewm(span=30, adjust=False).mean()
-                # Plot the candlestick chart with EMA lines
-                fig, ax = mpf.plot(df, type='candle', style='binance', addplot=[
-                               mpf.make_addplot(emaShort, color='blue'),
-                               mpf.make_addplot(emaMedium, color='red'),
-                               mpf.make_addplot(emaLong, color='orange')
-                            ], returnfig=True)
-                
-                plt.title(f'{symbol} Candlestick')
-                candlePath = f"{EXPORT_DIR}/{symbol}/{symbol}_CANDLESTICK.png"
-
-                isOnRule = False
-                if is_overbought == True and current_rsi >= 65:
-                    isOnRule = True
-
-                elif is_oversold == True and current_rsi <= 45:
-                    isOnRule = True
-
-                if isOnRule:
+                    
                     try:
                         os.makedirs(f"{EXPORT_DIR}/{symbol}")
                         plt.savefig(candlePath)
                         send_line_notification(msg, candlePath)
                     except:
                         pass
+
 
         except Exception as e:
             print(e)
