@@ -10,6 +10,7 @@ import talib
 import requests
 import logging
 
+EXPORT_DIR="export/kucoin"
 client = Market(url='https://openapi-v2.kucoin.com')
 LOG_FILENAME = datetime.now().strftime('logfile_%H_%M_%S_%d_%m_%Y.log')
 logging.basicConfig(filename=f"export/{LOG_FILENAME}",level=logging.DEBUG)   
@@ -49,8 +50,8 @@ def get_martket():
 
 if __name__ == '__main__':
     try:
-        shutil.rmtree("export")
-        os.mkdir("export")
+        shutil.rmtree(EXPORT_DIR)
+        os.mkdir(EXPORT_DIR)
     except:
         pass
     logging.info(f'Forecasting Job Started...')
@@ -115,7 +116,7 @@ if __name__ == '__main__':
                             ], returnfig=True)
                 
                 plt.title(f'{symbol} Candlestick')
-                candlePath = f"export/{symbol}/{symbol}_CANDLESTICK.png"
+                candlePath = f"{EXPORT_DIR}/{symbol}/{symbol}_CANDLESTICK.png"
 
                 isOnRule = False
                 if is_overbought == True and current_rsi >= 65:
@@ -126,7 +127,7 @@ if __name__ == '__main__':
 
                 if isOnRule:
                     try:
-                        os.makedirs(f"export/{symbol}")
+                        os.makedirs(f"{EXPORT_DIR}/{symbol}")
                         plt.savefig(candlePath)
                         send_line_notification(msg, candlePath)
                     except:
