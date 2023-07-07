@@ -41,43 +41,10 @@ def check_rsi(df):
     return df
 
 
-def check_macd_trend(df):
-    df['macd'], _, _ = talib.MACD(df['Close'])
-    df['macd_trend'] = df['macd'].diff() > 0
-    return df
-
-# def check_macd_crossover(df):
-#     df['macd'], df['macd_signal'], _ = talib.MACD(df['Close'])
-#     df['macd_crossover'] = ((df['macd'] > df['macd_signal']) & (df['macd'].shift() <= df['macd_signal'].shift()))
-#     return df
-
-
-def check_macd_crossover(df):
-    df['macd'], df['macd_signal'], _ = talib.MACD(df['Close'])
-    df['macd_crossover'] = ((df['macd'] > df['macd_signal']) & (
-        df['macd'].shift() <= df['macd_signal'].shift()))
-    df['macd_crossover_up'] = ((df['macd'] > df['macd_signal']) & (
-        df['macd'].shift() <= df['macd_signal'].shift()))
-    df['macd_crossover_down'] = ((df['macd'] < df['macd_signal']) & (
-        df['macd'].shift() >= df['macd_signal'].shift()))
-    return df
-
 # get symbol kline
 # Type of candlestick patterns: 1min, 3min, 5min, 15min, 30min, 1hour, 2hour, 4hour, 6hour, 8hour, 12hour, 1day, 1week
 timeFrame = "1hour"
-# symbols = ["BTC", "ETH","XRP", "LTC", "BCH", "KCS", "BNB", "SOL", "XMR", "MATIC","ADA", "AAVE", "APE", "MANA", "SAND", "AXS", "DOGE", "LINK", "GRT","ARB"]
-# symbols = ["BTC", "ETH","XRP","LTC", "BCH", "KCS", "BNB",]
-
 def get_martket():
-    # currencies = client.get_currencies()
-    # docs = []
-    # i = 1
-    # for s in currencies:
-    #     if len(s["contractAddress"]) > 0:
-    #         # print(s)
-    #         # print(f'{i} => {s["name"]}')
-    #         docs.append(s["name"])
-    #         i += 1
     return ['1INCH', 'AAVE', 'ADA', 'ALGO', 'ALPHA', 'APE', 'ARB', 'ATOM', 'AVAX', 'AXS', 'BAL', 'BAND', 'BAT', 'BCH', 'BLUR', 'BNB', 'BTC', 'CELO', 'CHZ', 'COMP', 'CRV', 'DOGE', 'DOT', 'DYDX', 'ENJ', 'ENS', 'ETH', 'FLOW', 'FTM', 'FXS', 'GAL', 'GLM', 'GRT', 'HBAR', 'HFT', 'ID', 'ILV', 'IMX', 'IOST', 'KNC', 'KSM', 'LDO', 'LINK', 'LQTY', 'LRC', 'LUNA', 'LYXE', 'MANA', 'MATIC', 'MKR', 'NEAR', 'OCEAN', 'OMG', 'OP', 'PERP', 'SAND', 'SCRT', 'SNX', 'SOL', 'STG', 'SUSHI', 'TRX', 'UNI', 'XLM', 'XRP', 'XTZ', 'YFI', 'ZIL']
 
 if __name__ == '__main__':
@@ -88,6 +55,11 @@ if __name__ == '__main__':
         try:
             klines = client.get_kline(f'{symbol}-USDT', timeFrame)
             if klines:
+                try:
+                    os.makedirs(f"export/{symbol}")
+                except:
+                    pass
+
                 df = pd.DataFrame(klines, columns=[
                                   'Date', 'Open', 'Close', 'High', 'Low', 'Volume', 'Turn Over'])
                 df['Date'] = df['Date'].astype(float)
@@ -111,30 +83,7 @@ if __name__ == '__main__':
                 # # Format datetime column as desired (e.g., 'YYYY-MM-DD HH:MM:SS')
                 # df['Date'] = df['Date'].dt.strftime('%Y-%m-%d %H:%M:%S')
                 df.set_index('Date', inplace=True)
-                df = check_macd_crossover(df)
-                df = check_macd_trend(df)
                 df = check_rsi(df)
-
-                # Check if MACD crossover occurred in the latest row
-                crossover_direction = "-"
-                if df['macd_crossover'].iloc[-1]:
-                    macd_value = df['macd'].iloc[-1]
-                    signal_value = df['macd_signal'].iloc[-1]
-
-                    print(
-                        f"macd_crossover_up: {df['macd_crossover_up'].iloc[-1]} macd_crossover_down: {df['macd_crossover_down'].iloc[-1]}")
-                    # if macd_value > signal_value:
-                    #     crossover_direction = 'Bullish (Upward)'
-                    # else:
-                    #     crossover_direction = 'Bearish (Downward)'
-
-                    if df['macd_crossover_up'].iloc[-1]:
-                        crossover_direction = 'Bullish (Upward)'
-
-                    elif df['macd_crossover_down'].iloc[-1]:
-                        crossover_direction = 'Bearish (Downward)'
-                    else:
-                        crossover_direction = '-'
 
                 # Check RSI levels
                 current_rsi = df['rsi'].iloc[-1]
@@ -148,78 +97,33 @@ if __name__ == '__main__':
                 else:
                     rsi_level = 'Neutral'
 
-                if df['macd_trend'].iloc[-1]:
-                    current_trend_direction = 'Upward'
-                else:
-                    current_trend_direction = 'Downward'
+                msg = f'เหรียญ {symbol}\nRSI Level: {rsi_level}\nRSI ปัจจุบัน: {current_rsi:.2f}\nTimeframe: {timeFrame}'
+                logging.debug(f'เหรียญ {symbol} RSI Level: {rsi_level} RSI ปัจจุบัน: {current_rsi:.2f} Timeframe: {timeFrame}')
+                
 
-                msg = f'เหรียญ {symbol}\nกำลังอยู่ในช่วง: {crossover_direction}\nเทรน: {current_trend_direction}\nRSI Level: {rsi_level}\nRSI ปัจจุบัน: {current_rsi:.2f}\nTimeframe: {timeFrame}'
-                logging.debug(f'เหรียญ {symbol} กำลังอยู่ในช่วง: {crossover_direction} เทรน: {current_trend_direction} RSI Level: {rsi_level} RSI ปัจจุบัน: {current_rsi:.2f} Timeframe: {timeFrame}')
-                send_line_notification(msg, None)
-                if crossover_direction != "-":
-                    # Check folder exits!
-                    if os.path.exists(f"export/{symbol}"):shutil.rmtree(f"export/{symbol}")
-                    os.makedirs(f"export/{symbol}")
-                    df.to_csv(f"export/{symbol}/{symbol}.csv")
+                # # Sort the DataFrame by the date column
+                df = df.iloc[::-1]
+                # Calculate MACD values
+                emaShort = df['Close'].ewm(span=5, adjust=False).mean()
+                emaMedium = df['Close'].ewm(span=10, adjust=False).mean()
+                emaLong = df['Close'].ewm(span=30, adjust=False).mean()
+                # Plot the candlestick chart with EMA lines
+                fig, ax = mpf.plot(df, type='candle', style='binance', addplot=[
+                               mpf.make_addplot(emaShort, color='blue'),
+                               mpf.make_addplot(emaMedium, color='red'),
+                               mpf.make_addplot(emaLong, color='orange')
+                            ], returnfig=True)
+                
+                plt.title(f'{symbol} Candlestick')
+                candlePath = f"export/{symbol}/{symbol}_CANDLESTICK.png"
+                plt.savefig(candlePath)
 
-                    # Plot RSI values and highlight overbought and oversold regions
-                    plt.figure(figsize=(12, 6))
-                    plt.plot(df['rsi'], label='RSI')
-                    plt.fill_between(df.index, 70, where=df['overbought'], color='red', alpha=0.3, label='Overbought')
-                    plt.fill_between(df.index, 0, where=df['oversold'], color='green', alpha=0.3, label='Oversold')
-                    plt.axhline(70, color='red', linestyle='--', linewidth=1)
-                    plt.axhline(30, color='green', linestyle='--', linewidth=1)
-                    plt.title(f'{symbol} RSI with Overbought and Oversold Regions')
-                    plt.xlabel('Date')
-                    plt.ylabel('RSI')
-                    plt.legend()
-                    plt.grid(True)
-                    # Save the chart as an image
-                    rsiPath = f"export/{symbol}/{symbol}_RSI.png"
-                    plt.savefig(rsiPath)
-                    # plt.show()
-                    send_line_notification(f"{symbol} RSI", rsiPath)
+                if is_overbought == True and current_rsi >= 65:
+                    send_line_notification(msg, candlePath)
 
-                    # Plot MACD values with crossover arrows and last price
-                    plt.figure(figsize=(12, 6))
-                    plt.plot(df['macd'], label='MACD')
-                    plt.plot(df['macd_signal'], label='Signal')
-                    plt.scatter(df.index[df['macd_crossover_up']], df['macd'][df['macd_crossover_up']], marker='^', color='green', label='Crossover Up')
-                    plt.scatter(df.index[df['macd_crossover_down']], df['macd'][df['macd_crossover_down']], marker='v', color='red', label='Crossover Down')
-                    # Add last price behind the arrows
-                    last_prices_up = df['Close'][df['macd_crossover_up']]
-                    last_prices_down = df['Close'][df['macd_crossover_down']]
-                    for i, price in last_prices_up.items():
-                        plt.annotate(f'{price:.2f}', (i, df['macd'][i]), textcoords="offset points", xytext=(0,10), ha='center', color='green')
-                    for i, price in last_prices_down.items():
-                        plt.annotate(f'{price:.2f}', (i, df['macd'][i]), textcoords="offset points", xytext=(0,-15), ha='center', color='red')
+                elif is_oversold == True and current_rsi <= 45:
+                    send_line_notification(msg, candlePath)
 
-                    # Add price on the last point of the MACD line
-                    last_price = df['Close'].iloc[-1]
-                    plt.annotate(f'{last_price:.2f}', (df.index[-1], df['macd'].iloc[-1]), textcoords="offset points", xytext=(0,10), ha='center', color='black')
-                    plt.title(f'{symbol} MACD with Crossovers and Last Price')
-                    plt.xlabel('Date')
-                    plt.ylabel('MACD')
-                    plt.legend()
-                    plt.grid(True)
-                    # Save the chart as an image
-                    macdPath = f"export/{symbol}/{symbol}_MACD.png"
-                    plt.savefig(macdPath)
-                    # plt.show()
-                    send_line_notification(f"{symbol} MACD", macdPath)
-
-                    # # Sort the DataFrame by the date column
-                    df = df.iloc[::-1]
-                    # Calculate MACD values
-                    ema_12 = df['Close'].ewm(span=12, adjust=False).mean()
-                    ema_26 = df['Close'].ewm(span=26, adjust=False).mean()
-
-                    # Plot the candlestick chart with EMA lines
-                    fig, ax = mpf.plot(df, type='candle', style='binance', addplot=[mpf.make_addplot(ema_12, color='blue'),mpf.make_addplot(ema_26, color='red')], returnfig=True)
-                    plt.title(f'{symbol} Candlestick')
-                    candlePath = f"export/{symbol}/{symbol}_CANDLESTICK.png"
-                    plt.savefig(candlePath)
-                    send_line_notification(f"{symbol} CANDLESTICK", candlePath)
 
         except Exception as e:
             print(e)
