@@ -50,7 +50,7 @@ def get_martket():
 
 if __name__ == '__main__':
     try:
-        shutil.rmtree(EXPORT_DIR)
+        # shutil.rmtree(EXPORT_DIR)
         os.makedirs(EXPORT_DIR)
     except:
         pass
