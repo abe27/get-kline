@@ -67,7 +67,8 @@ timeFrame = "1hour"
 def get_martket():
     return ['1INCH', 'AAVE', 'ADA', 'ALGO', 'ALPHA', 'APE', 'ARB', 'ATOM', 'AVAX', 'AXS', 'BAL', 'BAND', 'BAT', 'BCH', 'BLUR', 'BNB', 'BTC', 'CELO', 'CHZ', 'COMP', 'CRV', 'DOGE', 'DOT', 'DYDX', 'ENJ', 'ENS', 'ETH', 'FLOW', 'FTM', 'FXS', 'GAL', 'GLM', 'GRT', 'HBAR', 'HFT', 'ID', 'ILV', 'IMX', 'IOST', 'KNC', 'KSM', 'LDO', 'LINK', 'LQTY', 'LRC', 'LUNA', 'LYXE', 'MANA', 'MATIC', 'MKR', 'NEAR', 'OCEAN', 'OMG', 'OP', 'PERP', 'SAND', 'SCRT', 'SNX', 'SOL', 'STG', 'SUSHI', 'TRX', 'UNI', 'XLM', 'XRP', 'XTZ', 'YFI', 'ZIL']
 
-if __name__ == '__main__':
+
+def main():
     logging.info(f'Forecasting Job Started...')
     symbols = get_martket()
     symbols.sort()
@@ -160,3 +161,10 @@ if __name__ == '__main__':
             logging.error(str(e))
 
     logging.info(f'Forecasting Job Stoped...')
+
+def update_price():
+    print(f"update price")
+
+if __name__ == '__main__':
+    # main()
+    update_price()
