@@ -119,7 +119,6 @@ if __name__ == '__main__':
                 
                 if is_oversold:
                     # # Sort the DataFrame by the date column
-                    df = df.iloc[::-1]
                     # Calculate MACD values
                     emaShort = df['Close'].ewm(span=5, adjust=False).mean()
                     emaMedium = df['Close'].ewm(span=10, adjust=False).mean()
