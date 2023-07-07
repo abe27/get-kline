@@ -10,6 +10,12 @@ import requests
 import logging
 
 EXPORT_DIR="export/bitkub"
+try:
+    # shutil.rmtree(EXPORT_DIR)
+    os.makedirs(EXPORT_DIR)
+except:
+    pass
+
 LOG_FILENAME = datetime.now().strftime('bitkub_logfile_%H_%M_%S_%d_%m_%Y.log')
 logging.basicConfig(filename=f"export/{LOG_FILENAME}",level=logging.DEBUG)   
 

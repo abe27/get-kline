@@ -11,6 +11,12 @@ import requests
 import logging
 
 EXPORT_DIR="export/kucoin"
+try:
+    # shutil.rmtree(EXPORT_DIR)
+    os.makedirs(EXPORT_DIR)
+except:
+    pass
+
 client = Market(url='https://openapi-v2.kucoin.com')
 LOG_FILENAME = datetime.now().strftime('kucoin_logfile_%H_%M_%S_%d_%m_%Y.log')
 logging.basicConfig(filename=f"export/{LOG_FILENAME}",level=logging.DEBUG)   
@@ -49,11 +55,6 @@ def get_martket():
     return ['1INCH', 'AAVE', 'ADA', 'ALGO', 'ALPHA', 'APE', 'ARB', 'ATOM', 'AVAX', 'AXS', 'BAL', 'BAND', 'BAT', 'BCH', 'BLUR', 'BNB', 'BTC', 'CELO', 'CHZ', 'COMP', 'CRV', 'DOGE', 'DOT', 'DYDX', 'ENJ', 'ENS', 'ETH', 'FLOW', 'FTM', 'FXS', 'GAL', 'GLM', 'GRT', 'HBAR', 'HFT', 'ID', 'ILV', 'IMX', 'IOST', 'KNC', 'KSM', 'LDO', 'LINK', 'LQTY', 'LRC', 'LUNA', 'LYXE', 'MANA', 'MATIC', 'MKR', 'NEAR', 'OCEAN', 'OMG', 'OP', 'PERP', 'SAND', 'SCRT', 'SNX', 'SOL', 'STG', 'SUSHI', 'TRX', 'UNI', 'XLM', 'XRP', 'XTZ', 'YFI', 'ZIL']
 
 if __name__ == '__main__':
-    try:
-        # shutil.rmtree(EXPORT_DIR)
-        os.makedirs(EXPORT_DIR)
-    except:
-        pass
     logging.info(f'Forecasting Job Started...')
     symbols = get_martket()
     symbols.sort()
