@@ -12,7 +12,7 @@ import logging
 
 EXPORT_DIR="export/kucoin"
 client = Market(url='https://openapi-v2.kucoin.com')
-LOG_FILENAME = datetime.now().strftime('logfile_%H_%M_%S_%d_%m_%Y.log')
+LOG_FILENAME = datetime.now().strftime('kucoin_logfile_%H_%M_%S_%d_%m_%Y.log')
 logging.basicConfig(filename=f"export/{LOG_FILENAME}",level=logging.DEBUG)   
 
 def send_line_notification(message, image_path):
@@ -51,7 +51,7 @@ def get_martket():
 if __name__ == '__main__':
     try:
         shutil.rmtree(EXPORT_DIR)
-        os.mkdir(EXPORT_DIR)
+        os.makedirs(EXPORT_DIR)
     except:
         pass
     logging.info(f'Forecasting Job Started...')
@@ -137,4 +137,4 @@ if __name__ == '__main__':
             print(e)
             logging.error(str(e))
 
-    logging.info(f'Forecasting Job Started...')
+    logging.info(f'Forecasting Job Stoped...')

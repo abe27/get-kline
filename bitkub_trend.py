@@ -1,7 +1,6 @@
 from datetime import datetime, timedelta
 import os
 import shutil
-from kucoin.client import Market
 import matplotlib.pyplot as plt
 import mplfinance as mpf
 import pandas as pd
@@ -11,12 +10,11 @@ import requests
 import logging
 
 EXPORT_DIR="export/bitkub"
-client = Market(url='https://openapi-v2.kucoin.com')
-LOG_FILENAME = datetime.now().strftime('logfile_%H_%M_%S_%d_%m_%Y.log')
+LOG_FILENAME = datetime.now().strftime('bitkub_logfile_%H_%M_%S_%d_%m_%Y.log')
 logging.basicConfig(filename=f"export/{LOG_FILENAME}",level=logging.DEBUG)   
 
 def send_line_notification(message, image_path):
-    line_token = 'BfTqtBO0kuo5mqneTdBoe5ktUAnxYrHIoaWhLRcBTwj'
+    line_token = 'jeCy5PHmuP5cBDQz74LvCxV0pkiGEBrtYgXvS9RBIhT'
     url = 'https://notify-api.line.me/api/notify'
     headers = {'Authorization': f'Bearer {line_token}'}
     payload = {
@@ -55,7 +53,7 @@ def get_symbols():
 if __name__ == '__main__':
     try:
         shutil.rmtree(EXPORT_DIR)
-        os.mkdir(EXPORT_DIR)
+        os.makedirs(EXPORT_DIR)
     except:
         pass
     logging.info(f'Forecasting Job Started...')
@@ -151,4 +149,4 @@ if __name__ == '__main__':
             print(e)
             logging.error(str(e))
 
-    logging.info(f'Forecasting Job Started...')
+    logging.info(f'Forecasting Job Stoped...')
