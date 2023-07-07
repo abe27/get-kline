@@ -9,6 +9,15 @@ import pytz
 import talib
 import requests
 import logging
+from supabase import create_client, Client
+
+# eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFraWp2dnVvc3pkZmVqemZyd2VrIiwicm9sZSI6ImFub24iLCJpYXQiOjE2ODg3MDI4MzAsImV4cCI6MjAwNDI3ODgzMH0.YqQsx_heKmqTwOlN-Ta1-XB6lTasW-5-fmZq3J9Yjwc
+# tiggerDB
+# OtW8CRhFEMVL3B26
+
+url: str = "https://qkijvvuoszdfejzfrwek.supabase.co"
+key: str = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFraWp2dnVvc3pkZmVqemZyd2VrIiwicm9sZSI6ImFub24iLCJpYXQiOjE2ODg3MDI4MzAsImV4cCI6MjAwNDI3ODgzMH0.YqQsx_heKmqTwOlN-Ta1-XB6lTasW-5-fmZq3J9Yjwc"
+supabase: Client = create_client(url, key)
 
 EXPORT_DIR="kucoin/export"
 try:
@@ -110,6 +119,21 @@ if __name__ == '__main__':
                     # # Sort the DataFrame by the date column
                     df = df.iloc[::-1]
                     # Calculate MACD values
+                    lastPrice = df['Close'].iloc[-1]
+                    sbDB = supabase.table("assets").select("id").eq("exchange","kucoin").eq("symbol",symbol).execute()
+                    # Assert we pulled real data.
+                    if len(sbDB.data) > 0:
+                        sbDB = supabase.table("assets").update({"last_price": lastPrice, "updated_at": "now()"}).eq("exchange","kucoin").eq("symbol",symbol).execute()
+                    else:
+                        sbDB = supabase.table("assets").insert({
+                            "exchange":"kucoin",
+                            "symbol": symbol,
+                            "price": lastPrice,
+                            "last_price": lastPrice,
+                            "status": True
+                            }).execute()
+
+
                     emaShort = df['Close'].ewm(span=5, adjust=False).mean()
                     emaMedium = df['Close'].ewm(span=10, adjust=False).mean()
                     emaLong = df['Close'].ewm(span=30, adjust=False).mean()
