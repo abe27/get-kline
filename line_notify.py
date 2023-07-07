@@ -64,22 +64,21 @@ def check_macd_crossover(df):
 
 # get symbol kline
 # Type of candlestick patterns: 1min, 3min, 5min, 15min, 30min, 1hour, 2hour, 4hour, 6hour, 8hour, 12hour, 1day, 1week
-timeFrame = "4hour"
+timeFrame = "1hour"
 # symbols = ["BTC", "ETH","XRP", "LTC", "BCH", "KCS", "BNB", "SOL", "XMR", "MATIC","ADA", "AAVE", "APE", "MANA", "SAND", "AXS", "DOGE", "LINK", "GRT","ARB"]
 # symbols = ["BTC", "ETH","XRP","LTC", "BCH", "KCS", "BNB",]
 
 def get_martket():
-    currencies = client.get_currencies()
-    docs = []
-    i = 1
-    for s in currencies:
-        if len(s["contractAddress"]) > 0:
-            # print(s)
-            # print(f'{i} => {s["name"]}')
-            docs.append(s["name"])
-            i += 1
-    return docs
-
+    # currencies = client.get_currencies()
+    # docs = []
+    # i = 1
+    # for s in currencies:
+    #     if len(s["contractAddress"]) > 0:
+    #         # print(s)
+    #         # print(f'{i} => {s["name"]}')
+    #         docs.append(s["name"])
+    #         i += 1
+    return ['1INCH', 'AAVE', 'ADA', 'ALGO', 'ALPHA', 'APE', 'ARB', 'ATOM', 'AVAX', 'AXS', 'BAL', 'BAND', 'BAT', 'BCH', 'BLUR', 'BNB', 'BTC', 'CELO', 'CHZ', 'COMP', 'CRV', 'DOGE', 'DOT', 'DYDX', 'ENJ', 'ENS', 'ETH', 'FLOW', 'FTM', 'FXS', 'GAL', 'GLM', 'GRT', 'HBAR', 'HFT', 'ID', 'ILV', 'IMX', 'IOST', 'KNC', 'KSM', 'LDO', 'LINK', 'LQTY', 'LRC', 'LUNA', 'LYXE', 'MANA', 'MATIC', 'MKR', 'NEAR', 'OCEAN', 'OMG', 'OP', 'PERP', 'SAND', 'SCRT', 'SNX', 'SOL', 'STG', 'SUSHI', 'TRX', 'UNI', 'XLM', 'XRP', 'XTZ', 'YFI', 'ZIL']
 
 if __name__ == '__main__':
     logging.info(f'Forecasting Job Started...')

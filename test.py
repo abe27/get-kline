@@ -39,9 +39,20 @@ def check_macd_crossover(df):
 
 # resolution	string	Chart resolution (1, 5, 15, 60, 240, 1D)
 timeFrame = "60"
-symbols  = ["BTC", "ETH", "KUB", "OP", "APE", "BNB","DOGE", "XRP", "ADA", "IOST", "MANA"]
+# symbols  = ["BTC", "ETH", "KUB", "OP", "APE", "BNB","DOGE", "XRP", "ADA", "IOST", "MANA"]
+
+def get_symbols():
+    symbols = []
+    res = requests.request("GET", "https://api.bitkub.com/api/market/ticker")
+    data = res.json()
+    for symbol in data:
+        symbols.append(str(symbol.replace("THB_", "")).strip())
+    
+    return symbols
 
 if __name__ == "__main__":
+    symbols = get_symbols()
+    print(symbols)
     for symbol in symbols:
         dte = datetime.now()
         fromDte = int((dte - timedelta(hours=100)).strftime("%s"))
