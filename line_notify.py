@@ -155,8 +155,8 @@ if __name__ == '__main__':
 
                 msg = f'เหรียญ {symbol}\nกำลังอยู่ในช่วง: {crossover_direction}\nเทรน: {current_trend_direction}\nRSI Level: {rsi_level}\nRSI ปัจจุบัน: {current_rsi:.2f}\nTimeframe: {timeFrame}'
                 logging.debug(f'เหรียญ {symbol} กำลังอยู่ในช่วง: {crossover_direction} เทรน: {current_trend_direction} RSI Level: {rsi_level} RSI ปัจจุบัน: {current_rsi:.2f} Timeframe: {timeFrame}')
+                send_line_notification(msg, None)
                 if crossover_direction != "-":
-                    send_line_notification(msg, None)
                     # Check folder exits!
                     if os.path.exists(f"export/{symbol}"):shutil.rmtree(f"export/{symbol}")
                     os.makedirs(f"export/{symbol}")
