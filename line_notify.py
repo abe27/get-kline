@@ -12,7 +12,7 @@ import logging
 
 client = Market(url='https://openapi-v2.kucoin.com')
 LOG_FILENAME = datetime.now().strftime('logfile_%H_%M_%S_%d_%m_%Y.log')
-logging.basicConfig(filename=LOG_FILENAME,level=logging.DEBUG)   
+logging.basicConfig(filename=f"export/{LOG_FILENAME}",level=logging.DEBUG)   
 
 def send_line_notification(message, image_path):
     line_token = 'BfTqtBO0kuo5mqneTdBoe5ktUAnxYrHIoaWhLRcBTwj'
@@ -48,6 +48,11 @@ def get_martket():
     return ['1INCH', 'AAVE', 'ADA', 'ALGO', 'ALPHA', 'APE', 'ARB', 'ATOM', 'AVAX', 'AXS', 'BAL', 'BAND', 'BAT', 'BCH', 'BLUR', 'BNB', 'BTC', 'CELO', 'CHZ', 'COMP', 'CRV', 'DOGE', 'DOT', 'DYDX', 'ENJ', 'ENS', 'ETH', 'FLOW', 'FTM', 'FXS', 'GAL', 'GLM', 'GRT', 'HBAR', 'HFT', 'ID', 'ILV', 'IMX', 'IOST', 'KNC', 'KSM', 'LDO', 'LINK', 'LQTY', 'LRC', 'LUNA', 'LYXE', 'MANA', 'MATIC', 'MKR', 'NEAR', 'OCEAN', 'OMG', 'OP', 'PERP', 'SAND', 'SCRT', 'SNX', 'SOL', 'STG', 'SUSHI', 'TRX', 'UNI', 'XLM', 'XRP', 'XTZ', 'YFI', 'ZIL']
 
 if __name__ == '__main__':
+    try:
+        shutil.rmtree("export")
+        os.mkdir("export")
+    except:
+        pass
     logging.info(f'Forecasting Job Started...')
     symbols = get_martket()
     symbols.sort()
@@ -55,11 +60,6 @@ if __name__ == '__main__':
         try:
             klines = client.get_kline(f'{symbol}-USDT', timeFrame)
             if klines:
-                try:
-                    os.makedirs(f"export/{symbol}")
-                except:
-                    pass
-
                 df = pd.DataFrame(klines, columns=[
                                   'Date', 'Open', 'Close', 'High', 'Low', 'Volume', 'Turn Over'])
                 df['Date'] = df['Date'].astype(float)
@@ -116,14 +116,21 @@ if __name__ == '__main__':
                 
                 plt.title(f'{symbol} Candlestick')
                 candlePath = f"export/{symbol}/{symbol}_CANDLESTICK.png"
-                plt.savefig(candlePath)
 
+                isOnRule = False
                 if is_overbought == True and current_rsi >= 65:
-                    send_line_notification(msg, candlePath)
+                    isOnRule = True
 
                 elif is_oversold == True and current_rsi <= 45:
-                    send_line_notification(msg, candlePath)
+                    isOnRule = True
 
+                if isOnRule:
+                    try:
+                        os.makedirs(f"export/{symbol}")
+                        plt.savefig(candlePath)
+                        send_line_notification(msg, candlePath)
+                    except:
+                        pass
 
         except Exception as e:
             print(e)
