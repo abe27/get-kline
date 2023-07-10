@@ -9,6 +9,7 @@ import pytz
 import requests
 import talib
 
+TXT_TIMEFRAME="1ชั่วโมง"
 EXPORT_DIR="export"
 # SYMBOLS = ['1INCH', 'AAVE', 'ADA', 'ALGO', 'ALPHA', 'APE', 'ARB', 'ATOM', 'AVAX', 'AXS', 'BAL', 'BAND', 'BAT', 'BCH', 'BLUR', 'BNB', 'BTC', 'CELO', 'CHZ', 'COMP', 'CRV', 'DOGE', 'DOT', 'DYDX', 'ENJ', 'ENS', 'ETH', 'FLOW', 'FTM', 'FXS', 'GAL', 'GLM', 'GRT', 'HBAR', 'HFT', 'ID', 'ILV', 'IMX', 'IOST', 'KNC', 'KSM', 'LDO', 'LINK', 'LQTY', 'LRC', 'LUNA', 'LYXE', 'MANA', 'MATIC', 'MKR', 'NEAR', 'OCEAN', 'OMG', 'OP', 'PERP', 'SAND', 'SCRT', 'SNX', 'SOL', 'STG', 'SUSHI', 'TRX', 'UNI', 'XLM', 'XRP', 'XTZ', 'YFI', 'ZIL']
 def get_symbols():
@@ -149,7 +150,7 @@ def kucoin_kline():
 
                 # Sort the DataFrame by the date column
                 df = df.iloc[::-1]
-                msg = plot_chart(df, None,SYMBOL, f"{EXPORT_DIR}/kucoin/{SYMBOL}")
+                msg = plot_chart(df, TXT_TIMEFRAME,SYMBOL, f"{EXPORT_DIR}/kucoin/{SYMBOL}")
                 if msg:
                     print(msg)
                     send_line_notification('BfTqtBO0kuo5mqneTdBoe5ktUAnxYrHIoaWhLRcBTwj', msg[0], msg[1])
@@ -195,7 +196,7 @@ def bitkub_kline():
                     pytz.utc).dt.tz_convert(timezone)
                 
                 df.set_index('Date', inplace=True)
-                msg = plot_chart(df, None, SYMBOL, f"{EXPORT_DIR}/bitkub/{SYMBOL}")
+                msg = plot_chart(df, TXT_TIMEFRAME, SYMBOL, f"{EXPORT_DIR}/bitkub/{SYMBOL}")
                 if msg:
                     print(msg)
                     send_line_notification('jeCy5PHmuP5cBDQz74LvCxV0pkiGEBrtYgXvS9RBIhT', msg[0], msg[1])
@@ -240,7 +241,7 @@ def binance_kline():
                     pytz.utc).dt.tz_convert(timezone)
                 
                 df.set_index('Date', inplace=True)
-                msg = plot_chart(df, None, SYMBOL, f"{EXPORT_DIR}/binance/{SYMBOL}")
+                msg = plot_chart(df, TXT_TIMEFRAME, SYMBOL, f"{EXPORT_DIR}/binance/{SYMBOL}")
                 if msg:
                     print(msg)
                     send_line_notification('0gbOSCnyQVJ2y0Oc8EFmqfx2ZMVd6FUJmmuoC2Jugjg', msg[0], msg[1])
