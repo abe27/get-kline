@@ -45,7 +45,7 @@ def check_rsi_overbought_oversold(df, rsi_period=14, overbought_thresh=70, overs
     df['oversold'] = df['rsi'] < oversold_thresh
     return df
 
-def plot_chart(df, SYMBOL, exportPath):
+def plot_chart(df, tf="1 วัน",SYMBOL=None, exportPath=""):
     ## Check RSI cross
     df = check_rsi_overbought_oversold(df)
     # Calculate EMA9 and EMA21
@@ -69,7 +69,7 @@ def plot_chart(df, SYMBOL, exportPath):
     mpf.plot(df, type='candle', style='binance', title=f'{SYMBOL} Kline Chart',
             ylabel='Price', ylabel_lower='Shares', addplot=apds, returnfig=True)
     obj = df.tail(1)
-    print(obj["Diff"].values)
+    # print(obj["Diff"].values)
     emaDiff = float(f"{obj['Diff'].values[0]:.2f}")
     rsiValue = float(f"{obj['rsi'].values[0]:.2f}")
 
@@ -84,8 +84,8 @@ def plot_chart(df, SYMBOL, exportPath):
             isInterest = True
             txtInterest = "ช่วงน่าสนใจ"
 
-    msg = f"{SYMBOL} เทรนขณะนี้: {obj['Trend'].values[0]} อัตราEMA:{emaDiff} RSI Level: {rsiValue} {txtInterest}"
-    # print(msg)
+    msg = f"{SYMBOL} Timeframe: {tf}\nเทรนขณะนี้: {obj['Trend'].values[0]}\nอัตราEMA:{emaDiff}\nRSI Level: {rsiValue}\n{txtInterest}"
+    print(f"{SYMBOL} Timeframe: {tf} เทรนขณะนี้: {obj['Trend'].values[0]} อัตราEMA:{emaDiff} RSI Level: {rsiValue} {txtInterest}")
     try:
         shutil.rmtree(exportPath)
     except:
@@ -118,9 +118,9 @@ except:
 
 def kucoin_kline():
     # Type of candlestick patterns: 1min, 3min, 5min, 15min, 30min, 1hour, 2hour, 4hour, 6hour, 8hour, 12hour, 1day, 1week
-    TIMEFRAME="1hour"
+    TIMEFRAME="1day"
     dte = datetime.now()
-    startDte = int(datetime.timestamp(dte - timedelta(hours=100)))
+    startDte = int(datetime.timestamp(dte - timedelta(days=50)))
     endDte = int(datetime.timestamp(dte))
     for SYMBOL in get_symbols():
         if (SYMBOL not in ["USDT", "USDC", "BUSD", "TUSD", "DAI"]):
@@ -145,13 +145,11 @@ def kucoin_kline():
                 # Set the timezone for the 'Date' column
                 timezone = 'Asia/Bangkok'
                 df['Date'] = df['Date'].dt.tz_localize(pytz.utc).dt.tz_convert(timezone)
-                # # Format datetime column as desired (e.g., 'YYYY-MM-DD HH:MM:SS')
-                # df['Date'] = df['Date'].dt.strftime('%Y-%m-%d %H:%M:%S')
                 df.set_index('Date', inplace=True)
 
                 # Sort the DataFrame by the date column
                 df = df.iloc[::-1]
-                msg = plot_chart(df, SYMBOL, f"{EXPORT_DIR}/kucoin/{SYMBOL}")
+                msg = plot_chart(df, "1 วัน",SYMBOL, f"{EXPORT_DIR}/kucoin/{SYMBOL}")
                 if msg:
                     print(msg)
                     send_line_notification('BfTqtBO0kuo5mqneTdBoe5ktUAnxYrHIoaWhLRcBTwj', msg[0], msg[1])
@@ -160,7 +158,7 @@ def bitkub_kline():
     # resolution	string	Chart resolution (1, 5, 15, 60, 240, 1D)
     TIMEFRAME="1D"
     dte = datetime.now()
-    startDte = int(datetime.timestamp(dte - timedelta(days=100)))
+    startDte = int(datetime.timestamp(dte - timedelta(days=50)))
     endDte = int(datetime.timestamp(dte))
 
     symbols = get_symbols()
@@ -195,12 +193,9 @@ def bitkub_kline():
                 timezone = 'Asia/Bangkok'
                 df['Date'] = df['Date'].dt.tz_localize(
                     pytz.utc).dt.tz_convert(timezone)
-                # # Format datetime column as desired (e.g., 'YYYY-MM-DD HH:MM:SS')
-                # df['Date'] = df['Date'].dt.strftime('%Y-%m-%d %H:%M:%S')
+                
                 df.set_index('Date', inplace=True)
-                # Sort the DataFrame by the date column
-                # df = df.iloc[::-1]
-                msg = plot_chart(df, SYMBOL, f"{EXPORT_DIR}/bitkub/{SYMBOL}")
+                msg = plot_chart(df, "1 วัน", SYMBOL, f"{EXPORT_DIR}/bitkub/{SYMBOL}")
                 if msg:
                     print(msg)
                     send_line_notification('jeCy5PHmuP5cBDQz74LvCxV0pkiGEBrtYgXvS9RBIhT', msg[0], msg[1])
