@@ -59,6 +59,7 @@ def get_symbols():
         symbols.append(str(symbol.replace("THB_", "")).strip())
     
     return symbols
+
 if __name__ == '__main__':
     logging.info(f'Forecasting Job Started...')
     symbols = get_symbols()
