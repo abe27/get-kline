@@ -56,8 +56,11 @@ def plot_chart(df, SYMBOL, exportPath):
     df['EMA9_below_EMA21'] = df['EMA9'] < df['EMA21']
     df["Diff"] = df['EMA9'].astype(float)- df['EMA21'].astype(float)
     df['Crossover'] = df['EMA9_above_EMA21'].astype(int) - df['EMA9_below_EMA21'].astype(int)
-    # Filter for crossover points
-    crossover_df = df[df['Crossover'].diff() != 0]
+    
+
+    # Determine trend (Bullish, Bearish, or Neutral)
+    df['Trend'] = np.where(df['EMA9'] > df['EMA21'], 'Bullish(ขาขึ้น)', np.where(df['EMA9'] < df['EMA21'], 'Bearish(ขาลง)', 'Neutral(ไม่มีการเคลื่อนไหว)'))
+
     # Plot the candlestick chart with EMA lines and arrows
     apds = [
         mpf.make_addplot(df['EMA9'], color='blue'),
@@ -72,19 +75,16 @@ def plot_chart(df, SYMBOL, exportPath):
 
     isInterest = False
     txtInterest = "ไม่แนะนำให้ลงทุน"
-    txtEma = f"อยู่ในช่วงขาขึ้น"
     if obj["EMA9_below_EMA21"].values:
-        txtEma = f"อยู่ในช่วงขาลง"
         if rsiValue >= 70:
             isInterest = True
             txtInterest = "ช่วงน่าสนใจ"
     if obj["EMA9_above_EMA21"].values:
-        txtEma = f"อยู่ในช่วงขาขึ้น"
         if rsiValue <= 30:
             isInterest = True
             txtInterest = "ช่วงน่าสนใจ"
 
-    msg = f"{SYMBOL} {txtEma} อัตราEMA:{emaDiff} RSI Level: {rsiValue} {txtInterest}"
+    msg = f"{SYMBOL} เทรนขณะนี้: {obj['Trend'].values[0]} อัตราEMA:{emaDiff} RSI Level: {rsiValue} {txtInterest}"
     # print(msg)
     try:
         shutil.rmtree(exportPath)
@@ -97,6 +97,7 @@ def plot_chart(df, SYMBOL, exportPath):
 
     df.to_csv(f"{exportPath}/{SYMBOL}.csv")
     plt.savefig(f"{exportPath}/{SYMBOL}.png")
+    plt.close()
 
     if isInterest:
         return [msg, f"{exportPath}/{SYMBOL}.png"]
@@ -157,9 +158,9 @@ def kucoin_kline():
 
 def bitkub_kline():
     # resolution	string	Chart resolution (1, 5, 15, 60, 240, 1D)
-    TIMEFRAME="60"
+    TIMEFRAME="1D"
     dte = datetime.now()
-    startDte = int(datetime.timestamp(dte - timedelta(hours=100)))
+    startDte = int(datetime.timestamp(dte - timedelta(days=100)))
     endDte = int(datetime.timestamp(dte))
 
     symbols = get_symbols()
@@ -198,7 +199,7 @@ def bitkub_kline():
                 # df['Date'] = df['Date'].dt.strftime('%Y-%m-%d %H:%M:%S')
                 df.set_index('Date', inplace=True)
                 # Sort the DataFrame by the date column
-                df = df.iloc[::-1]
+                # df = df.iloc[::-1]
                 msg = plot_chart(df, SYMBOL, f"{EXPORT_DIR}/bitkub/{SYMBOL}")
                 if msg:
                     print(msg)
