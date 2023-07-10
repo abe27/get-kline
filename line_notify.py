@@ -204,6 +204,48 @@ def bitkub_kline():
             print(ex)
             pass
 
+def binance_kline():
+     # resolution	,1s,1m,3m,5m,15m,30m,1h,2h,4h,6h,8h,12h,1d,3d,1w,1M
+    TIMEFRAME="1h"
+    symbols = get_symbols()
+    symbols.sort()
+    for SYMBOL in symbols:
+        if (SYMBOL not in ["USDT", "USDC", "BUSD", "TUSD", "DAI"]):
+            url = f"https://api.binance.com/api/v3/klines?symbol={SYMBOL}USDT&interval={TIMEFRAME}&limit=50"
+            res = requests.request("GET", url)
+            klines = res.json()
+            if ("code" not in klines):
+                df = pd.DataFrame(klines, columns=['Date', 'Open', 'High', 'Low','Close', 'Volume', "CloseTime", "Quote", "Number", "TakerBase" ,"TakerQuote", "Unused"])
+                df['Date'] = df["Date"].astype(float)
+                df['Open'] = df["Open"].astype(float)
+                df['High'] = df["High"].astype(float)
+                df['Low'] = df["Low"].astype(float)
+                df['Close'] = df["Close"].astype(float)
+                df['Volume'] = df["Volume"].astype(float)
+                df["CloseTime"] = df["CloseTime"].astype(float)
+                df["Quote"] = df["Quote"].astype(float)
+                df["Number"] = df["Number"].astype(float)
+                df["TakerBase"] = df["TakerBase"].astype(float)
+                df["TakerQuote"] = df["TakerQuote"].astype(float)
+                df["Unused"] = df["Unused"].astype(float)
+
+                # Convert the 'Date' column to datetime format
+                try:
+                    df['Date'] = pd.to_datetime(df['Date'] * 1000, unit='ms')
+                except ValueError:
+                    df['Date'] = pd.to_datetime(df['Date'] * 1000)
+                # Set the timezone for the 'Date' column
+                timezone = 'Asia/Bangkok'
+                df['Date'] = df['Date'].dt.tz_localize(
+                    pytz.utc).dt.tz_convert(timezone)
+                
+                df.set_index('Date', inplace=True)
+                msg = plot_chart(df, "1 วัน", SYMBOL, f"{EXPORT_DIR}/binance/{SYMBOL}")
+                if msg:
+                    print(msg)
+                    send_line_notification('0gbOSCnyQVJ2y0Oc8EFmqfx2ZMVd6FUJmmuoC2Jugjg', msg[0], msg[1])
+
 if __name__ == '__main__':
     bitkub_kline()
     kucoin_kline()
+    binance_kline()
