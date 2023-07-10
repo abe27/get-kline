@@ -97,6 +97,7 @@ def plot_chart(df, SYMBOL, exportPath):
 
     df.to_csv(f"{exportPath}/{SYMBOL}.csv")
     plt.savefig(f"{exportPath}/{SYMBOL}.png")
+    plt.close()
 
     if isInterest:
         return [msg, f"{exportPath}/{SYMBOL}.png"]
