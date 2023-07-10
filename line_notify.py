@@ -45,12 +45,12 @@ def check_rsi_overbought_oversold(df, rsi_period=14, overbought_thresh=70, overs
     df['oversold'] = df['rsi'] < oversold_thresh
     return df
 
-def plot_chart(df, tf="1 วัน",SYMBOL=None, exportPath=""):
+def plot_chart(df, tf="1ชั่วโมง",SYMBOL=None, exportPath=""):
     ## Check RSI cross
     df = check_rsi_overbought_oversold(df)
     # Calculate EMA9 and EMA21
-    df['EMA9'] = df['Close'].ewm(span=9, adjust=False).mean()
-    df['EMA21'] = df['Close'].ewm(span=21, adjust=False).mean()
+    df['EMA9'] = df['Close'].ewm(span=50, adjust=False).mean()
+    df['EMA21'] = df['Close'].ewm(span=200, adjust=False).mean()
     # Find crossover points
     df['EMA9_above_EMA21'] = df['EMA9'] > df['EMA21']
     df['EMA9_below_EMA21'] = df['EMA9'] < df['EMA21']
@@ -118,9 +118,9 @@ except:
 
 def kucoin_kline():
     # Type of candlestick patterns: 1min, 3min, 5min, 15min, 30min, 1hour, 2hour, 4hour, 6hour, 8hour, 12hour, 1day, 1week
-    TIMEFRAME="30min"
+    TIMEFRAME="1hour"
     dte = datetime.now()
-    startDte = int(datetime.timestamp(dte - timedelta(hours=50)))
+    startDte = int(datetime.timestamp(dte - timedelta(hours=200)))
     endDte = int(datetime.timestamp(dte))
     for SYMBOL in get_symbols():
         if (SYMBOL not in ["USDT", "USDC", "BUSD", "TUSD", "DAI"]):
@@ -149,7 +149,7 @@ def kucoin_kline():
 
                 # Sort the DataFrame by the date column
                 df = df.iloc[::-1]
-                msg = plot_chart(df, "1 วัน",SYMBOL, f"{EXPORT_DIR}/kucoin/{SYMBOL}")
+                msg = plot_chart(df, None,SYMBOL, f"{EXPORT_DIR}/kucoin/{SYMBOL}")
                 if msg:
                     print(msg)
                     send_line_notification('BfTqtBO0kuo5mqneTdBoe5ktUAnxYrHIoaWhLRcBTwj', msg[0], msg[1])
@@ -158,7 +158,7 @@ def bitkub_kline():
     # resolution	string	Chart resolution (1, 5, 15, 60, 240, 1D)
     TIMEFRAME="60"
     dte = datetime.now()
-    startDte = int(datetime.timestamp(dte - timedelta(days=5)))
+    startDte = int(datetime.timestamp(dte - timedelta(hours=200)))
     endDte = int(datetime.timestamp(dte))
 
     symbols = get_symbols()
@@ -195,7 +195,7 @@ def bitkub_kline():
                     pytz.utc).dt.tz_convert(timezone)
                 
                 df.set_index('Date', inplace=True)
-                msg = plot_chart(df, "1 วัน", SYMBOL, f"{EXPORT_DIR}/bitkub/{SYMBOL}")
+                msg = plot_chart(df, None, SYMBOL, f"{EXPORT_DIR}/bitkub/{SYMBOL}")
                 if msg:
                     print(msg)
                     send_line_notification('jeCy5PHmuP5cBDQz74LvCxV0pkiGEBrtYgXvS9RBIhT', msg[0], msg[1])
@@ -211,7 +211,7 @@ def binance_kline():
     symbols.sort()
     for SYMBOL in symbols:
         if (SYMBOL not in ["USDT", "USDC", "BUSD", "TUSD", "DAI"]):
-            url = f"https://api.binance.com/api/v3/klines?symbol={SYMBOL}USDT&interval={TIMEFRAME}&limit=50"
+            url = f"https://api.binance.com/api/v3/klines?symbol={SYMBOL}USDT&interval={TIMEFRAME}&limit=200"
             res = requests.request("GET", url)
             klines = res.json()
             if ("code" not in klines):
@@ -240,7 +240,7 @@ def binance_kline():
                     pytz.utc).dt.tz_convert(timezone)
                 
                 df.set_index('Date', inplace=True)
-                msg = plot_chart(df, "1 วัน", SYMBOL, f"{EXPORT_DIR}/binance/{SYMBOL}")
+                msg = plot_chart(df, None, SYMBOL, f"{EXPORT_DIR}/binance/{SYMBOL}")
                 if msg:
                     print(msg)
                     send_line_notification('0gbOSCnyQVJ2y0Oc8EFmqfx2ZMVd6FUJmmuoC2Jugjg', msg[0], msg[1])
@@ -248,4 +248,4 @@ def binance_kline():
 if __name__ == '__main__':
     bitkub_kline()
     kucoin_kline()
-    binance_kline()
+    # binance_kline()
