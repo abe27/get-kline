@@ -76,11 +76,11 @@ def plot_chart(df, tf="1 วัน",SYMBOL=None, exportPath=""):
     isInterest = False
     txtInterest = "ไม่แนะนำให้ลงทุน"
     if obj["EMA9_below_EMA21"].values:
-        if rsiValue >= 70:
+        if rsiValue > 69:
             isInterest = True
             txtInterest = "ช่วงน่าสนใจ"
     if obj["EMA9_above_EMA21"].values:
-        if rsiValue <= 30:
+        if rsiValue < 31:
             isInterest = True
             txtInterest = "ช่วงน่าสนใจ"
 
@@ -118,9 +118,9 @@ except:
 
 def kucoin_kline():
     # Type of candlestick patterns: 1min, 3min, 5min, 15min, 30min, 1hour, 2hour, 4hour, 6hour, 8hour, 12hour, 1day, 1week
-    TIMEFRAME="1day"
+    TIMEFRAME="30min"
     dte = datetime.now()
-    startDte = int(datetime.timestamp(dte - timedelta(days=50)))
+    startDte = int(datetime.timestamp(dte - timedelta(hours=50)))
     endDte = int(datetime.timestamp(dte))
     for SYMBOL in get_symbols():
         if (SYMBOL not in ["USDT", "USDC", "BUSD", "TUSD", "DAI"]):
@@ -156,9 +156,9 @@ def kucoin_kline():
 
 def bitkub_kline():
     # resolution	string	Chart resolution (1, 5, 15, 60, 240, 1D)
-    TIMEFRAME="1D"
+    TIMEFRAME="60"
     dte = datetime.now()
-    startDte = int(datetime.timestamp(dte - timedelta(days=50)))
+    startDte = int(datetime.timestamp(dte - timedelta(days=5)))
     endDte = int(datetime.timestamp(dte))
 
     symbols = get_symbols()
@@ -206,4 +206,4 @@ def bitkub_kline():
 
 if __name__ == '__main__':
     bitkub_kline()
-    # kucoin_kline()
+    kucoin_kline()
