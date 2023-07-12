@@ -187,11 +187,6 @@ SYMBOLS = [
     "MANA"]
 
 def kucoin():
-    # สร้าง Client ของ KuCoin
-    api_key = '64955e9d5f668a0001837a9a'
-    api_secret = '25a31dc8-f9c0-4c1c-95b5-9c23915a9f17'
-    api_passphrase = 'ADSads123'
-    client = kc.Client(api_key, api_secret, api_passphrase)
     # ดึงข้อมูลเกี่ยวกับราคาที่ต้องการ
     TIMEFRAME = "30min"
     SYMBOLS.sort()
@@ -200,22 +195,24 @@ def kucoin():
         startDte = int(datetime.timestamp(dte - timedelta(days=3)))
         endDte = int(datetime.timestamp(dte))
         try:
-            candles = client.get_kline_data(
-                f"{symbol}-USDT", kline_type=TIMEFRAME, start=startDte, end=endDte)
-            # สร้าง DataFrame จากข้อมูลเกี่ยวกับราคา
-            df = pd.DataFrame(candles)
-            df.columns = ['time', 'open', 'close', 'high', 'low', 'volume', 'turnover']
-            df['time'] = pd.to_datetime((df['time']).astype(float) * 1000, unit='ms')
-            timezone = 'Asia/Bangkok'
-            df['time'] = df['time'].dt.tz_localize(pytz.utc).dt.tz_convert(timezone)
+            url = f"https://openapi-v2.kucoin.com/api/v1/market/candles?type={TIMEFRAME}&symbol={symbol}-USDT&startAt={startDte}&endAt={endDte}"
+            res = requests.request("GET", url)
+            klines = res.json()
+            if klines['code'] == '200000' and len(klines['data']) > 0:
+                df = pd.DataFrame(klines["data"])
+                # สร้าง DataFrame จากข้อมูลเกี่ยวกับราคา
+                df.columns = ['time', 'open', 'close', 'high', 'low', 'volume', 'turnover']
+                df['time'] = pd.to_datetime((df['time']).astype(float) * 1000, unit='ms')
+                timezone = 'Asia/Bangkok'
+                df['time'] = df['time'].dt.tz_localize(pytz.utc).dt.tz_convert(timezone)
 
-            # แปลงคอลัมน์เป็นชนิดข้อมูลที่ถูกต้อง
-            df[['open', 'close', 'high', 'low', 'volume', 'turnover']] = df[[
-                'open', 'close', 'high', 'low', 'volume', 'turnover']].astype(float)
-            df = df.iloc[::-1]
-            # กำหนดการพล็อตกราฟแท่งเทียนและเส้น EMA และเส้น RSI
-            df.set_index('time', inplace=True)
-            plot_data("KUCOIN", symbol, df, TIMEFRAME,12,26,200, 'BfTqtBO0kuo5mqneTdBoe5ktUAnxYrHIoaWhLRcBTwj')
+                # แปลงคอลัมน์เป็นชนิดข้อมูลที่ถูกต้อง
+                df[['open', 'close', 'high', 'low', 'volume', 'turnover']] = df[[
+                    'open', 'close', 'high', 'low', 'volume', 'turnover']].astype(float)
+                df = df.iloc[::-1]
+                # กำหนดการพล็อตกราฟแท่งเทียนและเส้น EMA และเส้น RSI
+                df.set_index('time', inplace=True)
+                plot_data("KUCOIN", symbol, df, TIMEFRAME,12,26,200, 'BfTqtBO0kuo5mqneTdBoe5ktUAnxYrHIoaWhLRcBTwj')
         except:
             pass
 
