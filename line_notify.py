@@ -85,7 +85,7 @@ def plot_data(exchange, symbol, df, timeFrame, short=9, long=21, longTerm=50, li
                        addplot=add_plot,
                        title=f'{symbol} Candlestick Chart with EMA and RSI',
                        ylabel='Price',
-                       figsize=[40, 8],
+                       figsize=[20, 8],
                        volume=True,
                        show_nontrading=True,
                        returnfig=True)
@@ -151,7 +151,7 @@ def plot_data(exchange, symbol, df, timeFrame, short=9, long=21, longTerm=50, li
         pass
 
 
-SYMBOLS = ["OP","NEAR","BTC","ETH","XRP","BNB","SOL","MATIC","ADA","APE","AXS","LINK","LTC","BCH","DOGE","DOT","KUB","KCS","SAND","MANA"]
+SYMBOLS = ["OP","NEAR","BTC","ETH","XRP","BNB","SOL","MATIC","ADA","APE","LINK","LTC","BCH","DOGE","DOT","KUB","KCS","SAND"]
 
 def kucoin():
     # ดึงข้อมูลเกี่ยวกับราคาที่ต้องการ
@@ -190,7 +190,7 @@ def bitkub_kline():
     SYMBOLS.sort()
     for symbol in SYMBOLS:
         dte = datetime.now()
-        startDte = int(datetime.timestamp(dte - timedelta(days=10)))
+        startDte = int(datetime.timestamp(dte - timedelta(days=5)))
         endDte = int(datetime.timestamp(dte))
         try:
             for symbol in SYMBOLS:
@@ -231,5 +231,5 @@ def bitkub_kline():
             pass
 
 if __name__ == '__main__':
-    kucoin()
     bitkub_kline()
+    kucoin()
