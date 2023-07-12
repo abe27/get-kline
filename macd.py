@@ -85,7 +85,7 @@ def plot_data(exchange, symbol, df, timeFrame, short=9, long=21, longTerm=50, li
                        addplot=add_plot,
                        title=f'{symbol} Candlestick Chart with EMA and RSI',
                        ylabel='Price',
-                       figsize=[10, 6],
+                       figsize=[40, 8],
                        volume=True,
                        show_nontrading=True,
                        returnfig=True)
@@ -130,7 +130,7 @@ def plot_data(exchange, symbol, df, timeFrame, short=9, long=21, longTerm=50, li
         # คำนวณเปอร์เซ็นต์การตัดกันชนะ
         win_rate = (cross_up_count / total_cross_count) * 100
 
-        msg = f'{symbol}\nตำแหน่งล่าสุดที่ {txtCross} คือ: {cross_date.strftime("%Y-%m-%d %H:%M")}\nEMA: {emaShort_latest - emaLong_latest:.2f}\nRSI: {df["rsi14"].iloc[-1].astype(float):.2f}'
+        msg = f'{symbol}\nตำแหน่งล่าสุดที่ {txtCross} คือ: {cross_date.strftime("%Y-%m-%d %H:%M")}\nEMA: {emaShort_latest - emaLong_latest:.2f}\nRSI: {df["rsi14"].iloc[-13].astype(float):.2f}/{df["rsi14"].iloc[-1].astype(float):.2f}'
         msg += f"\nอัตราการเทรดชนะ: {win_rate:.2f}%\nTimeframe: {timeFrame}"
         preRSI = df["rsi14"].iloc[-2]
         lastRSI = df["rsi14"].iloc[-1]
@@ -141,7 +141,7 @@ def plot_data(exchange, symbol, df, timeFrame, short=9, long=21, longTerm=50, li
             # แจ้งเตือนผ่านไลน์
             if (float(f"{emaShort_latest - emaLong_latest:.2f}") < 0.1 and float(f"{emaShort_latest - emaLong_latest:.2f}") >= -1):
                 if isSpot:
-                    if lastRSI <= 30 and preRSI < lastRSI:
+                    if lastRSI < 35 and preRSI < lastRSI:
                         send_line_notification(lineToken, msg, f"{EXPORT_DATA_DIR}/{symbol}.png")
                 else:
                     send_line_notification(lineToken, msg, f"{EXPORT_DATA_DIR}/{symbol}.png")
@@ -181,7 +181,6 @@ SYMBOLS = [
     "BCH",
     "DOGE",
     "DOT",
-    "GT",
     "KUB",
     "KCS",
     "SAND",
@@ -216,8 +215,57 @@ def kucoin():
             df = df.iloc[::-1]
             # กำหนดการพล็อตกราฟแท่งเทียนและเส้น EMA และเส้น RSI
             df.set_index('time', inplace=True)
-            plot_data("KUCOIN", symbol, df, TIMEFRAME,9,21,50, 'BfTqtBO0kuo5mqneTdBoe5ktUAnxYrHIoaWhLRcBTwj')
+            plot_data("KUCOIN", symbol, df, TIMEFRAME,12,26,200, 'BfTqtBO0kuo5mqneTdBoe5ktUAnxYrHIoaWhLRcBTwj')
         except:
             pass
 
-kucoin()
+def bitkub_kline():
+    # resolution	string	Chart resolution (1, 5, 15, 60, 240, 1D)
+    # ดึงข้อมูลเกี่ยวกับราคาที่ต้องการ
+    TIMEFRAME = "60"
+    SYMBOLS.sort()
+    for symbol in SYMBOLS:
+        dte = datetime.now()
+        startDte = int(datetime.timestamp(dte - timedelta(days=10)))
+        endDte = int(datetime.timestamp(dte))
+        try:
+            for symbol in SYMBOLS:
+                try:
+                    url = f"https://api.bitkub.com/tradingview/history?symbol={symbol}_THB&resolution={TIMEFRAME}&from={startDte}&to={endDte}"
+                    res = requests.request("GET", url)
+                    obj = res.json()
+
+                    klines = []
+                    x = len(obj["c"])
+                    for i in range(x):
+                        klines.append([obj['t'][i], obj['o'][i], obj['c'][i], obj['h'][i], obj['l'][i], obj['v'][i]])
+
+                    if klines:
+                        df = pd.DataFrame(klines)
+                        df.columns = ['time', 'open', 'close', 'high', 'low', 'volume']
+                        # แปลงคอลัมน์เป็นชนิดข้อมูลที่ถูกต้อง
+                        df[['open', 'close', 'high', 'low', 'volume']] = df[['open', 'close', 'high', 'low', 'volume']].astype(float)
+
+                        # Convert the 'Date' column to datetime format
+                        try:
+                            df['time'] = pd.to_datetime(df['time'] * 1000, unit='ms')
+                        except ValueError:
+                            df['time'] = pd.to_datetime(df['time'] * 1000, unit='s')
+
+                        # Set the timezone for the 'Date' column
+                        timezone = 'Asia/Bangkok'
+                        df['time'] = df['time'].dt.tz_localize(
+                            pytz.utc).dt.tz_convert(timezone)
+
+                        # กำหนดการพล็อตกราฟแท่งเทียนและเส้น EMA และเส้น RSI
+                        df.set_index('time', inplace=True)
+                        plot_data("BITKUB", symbol, df, "1hour",9,21,50, 'jeCy5PHmuP5cBDQz74LvCxV0pkiGEBrtYgXvS9RBIhT', True)
+
+                except:
+                    pass
+        except:
+            pass
+
+if __name__ == '__main__':
+    kucoin()
+    bitkub_kline()
