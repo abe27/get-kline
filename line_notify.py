@@ -151,40 +151,7 @@ def plot_data(exchange, symbol, df, timeFrame, short=9, long=21, longTerm=50, li
         pass
 
 
-SYMBOLS = [
-    "XMR",
-    "CAKE",
-    "ALGO",
-    "XLM",
-    "TRX",
-    "EOS",
-    "BAT",
-    "OP",
-    "ATOM",
-    "GALA",
-    "KDA",
-    "NEAR",
-    "IMX",
-    "SIX",
-    "1INCH",
-    "BTC",
-    "ETH",
-    "XRP",
-    "BNB",
-    "SOL",
-    "MATIC",
-    "ADA",
-    "APE",
-    "AXS",
-    "LINK",
-    "LTC",
-    "BCH",
-    "DOGE",
-    "DOT",
-    "KUB",
-    "KCS",
-    "SAND",
-    "MANA"]
+SYMBOLS = ["OP","NEAR","BTC","ETH","XRP","BNB","SOL","MATIC","ADA","APE","AXS","LINK","LTC","BCH","DOGE","DOT","KUB","KCS","SAND","MANA"]
 
 def kucoin():
     # ดึงข้อมูลเกี่ยวกับราคาที่ต้องการ
