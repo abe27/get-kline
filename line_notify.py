@@ -144,7 +144,8 @@ def plot_data(exchange, symbol, df, timeFrame, short=9, long=21, longTerm=50, li
                     if lastRSI < 35 and preRSI < lastRSI:
                         send_line_notification(lineToken, msg, f"{EXPORT_DATA_DIR}/{symbol}.png")
                 else:
-                    send_line_notification(lineToken, msg, f"{EXPORT_DATA_DIR}/{symbol}.png")
+                    if (lastRSI < 35 and preRSI < lastRSI) or (lastRSI > 65 and preRSI > lastRSI) :
+                        send_line_notification(lineToken, msg, f"{EXPORT_DATA_DIR}/{symbol}.png")
 
     except Exception as e:
         print(e)
@@ -155,7 +156,7 @@ SYMBOLS = ["OP","NEAR","BTC","ETH","XRP","BNB","SOL","MATIC","ADA","APE","LINK",
 
 def kucoin():
     # ดึงข้อมูลเกี่ยวกับราคาที่ต้องการ
-    TIMEFRAME = "30min"
+    TIMEFRAME = "1hour"
     SYMBOLS.sort()
     for symbol in SYMBOLS:
         dte = datetime.now()
@@ -179,7 +180,7 @@ def kucoin():
                 df = df.iloc[::-1]
                 # กำหนดการพล็อตกราฟแท่งเทียนและเส้น EMA และเส้น RSI
                 df.set_index('time', inplace=True)
-                plot_data("KUCOIN", symbol, df, TIMEFRAME,12,26,200, 'BfTqtBO0kuo5mqneTdBoe5ktUAnxYrHIoaWhLRcBTwj')
+                plot_data("KUCOIN", symbol, df, TIMEFRAME,9,21,50, 'BfTqtBO0kuo5mqneTdBoe5ktUAnxYrHIoaWhLRcBTwj')
         except:
             pass
 
@@ -231,5 +232,5 @@ def bitkub_kline():
             pass
 
 if __name__ == '__main__':
-    bitkub_kline()
+    # bitkub_kline()
     kucoin()
