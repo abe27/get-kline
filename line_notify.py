@@ -131,9 +131,22 @@ def plot_data(exchange, symbol, df, timeFrame, short=9, long=21, longTerm=50, li
         win_rate = (cross_up_count / total_cross_count) * 100
 
         msg = f'{symbol}\nตำแหน่งล่าสุดที่ {txtCross} คือ: {cross_date.strftime("%Y-%m-%d %H:%M")}\nEMA: {emaShort_latest - emaLong_latest:.2f}\nRSI: {df["rsi14"].iloc[-13].astype(float):.2f}/{df["rsi14"].iloc[-1].astype(float):.2f}'
-        msg += f"\nอัตราการเทรดชนะ: {win_rate:.2f}%\nTimeframe: {timeFrame}"
+        
         preRSI = df["rsi14"].iloc[-2]
         lastRSI = df["rsi14"].iloc[-1]
+        txtTrend = ""
+        if (lastRSI < 40 and preRSI > lastRSI):
+            txtTrend = "\nกำลังปรับตัวลง"
+
+        elif (lastRSI > 60 and preRSI < lastRSI):
+            txtTrend = "\nกำลังปรับตัวขึ้น"
+        
+        else:
+            txtTrend = "\กำลังลอยตัว"
+
+        msg += txtTrend
+        msg += f"\nอัตราการเทรดชนะ: {win_rate:.2f}%\nTimeframe: {timeFrame}"
+        
         df.to_csv(f"{EXPORT_DATA_DIR}/{symbol}.csv")
         plt.savefig(f"{EXPORT_DATA_DIR}/{symbol}.png", bbox_inches='tight')
         print(msg)
@@ -144,15 +157,14 @@ def plot_data(exchange, symbol, df, timeFrame, short=9, long=21, longTerm=50, li
                     if lastRSI < 35 and preRSI < lastRSI:
                         send_line_notification(lineToken, msg, f"{EXPORT_DATA_DIR}/{symbol}.png")
                 else:
-                    if (lastRSI < 35 and preRSI < lastRSI) or (lastRSI > 65 and preRSI > lastRSI) :
-                        send_line_notification(lineToken, msg, f"{EXPORT_DATA_DIR}/{symbol}.png")
+                    send_line_notification(lineToken, msg, f"{EXPORT_DATA_DIR}/{symbol}.png")
 
     except Exception as e:
         print(e)
         pass
 
 
-SYMBOLS = ["OP","NEAR","BTC","ETH","XRP","BNB","SOL","MATIC","ADA","APE","LINK","LTC","BCH","DOGE","DOT","KUB","KCS","SAND"]
+SYMBOLS = ["OP","NEAR","BTC","ETH","XRP","BNB","SOL","MATIC","ADA","APE","LINK","LTC","BCH","DOGE","DOT","KUB","KCS","SAND", "XLM"]
 
 def kucoin():
     # ดึงข้อมูลเกี่ยวกับราคาที่ต้องการ

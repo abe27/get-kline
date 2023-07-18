@@ -85,7 +85,7 @@ def plot_data(exchange, symbol, df, timeFrame, short=9, long=21, longTerm=50, li
                        addplot=add_plot,
                        title=f'{symbol} Candlestick Chart with EMA and RSI',
                        ylabel='Price',
-                       figsize=[40, 8],
+                       figsize=[20, 8],
                        volume=True,
                        show_nontrading=True,
                        returnfig=True)
@@ -131,9 +131,22 @@ def plot_data(exchange, symbol, df, timeFrame, short=9, long=21, longTerm=50, li
         win_rate = (cross_up_count / total_cross_count) * 100
 
         msg = f'{symbol}\nตำแหน่งล่าสุดที่ {txtCross} คือ: {cross_date.strftime("%Y-%m-%d %H:%M")}\nEMA: {emaShort_latest - emaLong_latest:.2f}\nRSI: {df["rsi14"].iloc[-13].astype(float):.2f}/{df["rsi14"].iloc[-1].astype(float):.2f}'
-        msg += f"\nอัตราการเทรดชนะ: {win_rate:.2f}%\nTimeframe: {timeFrame}"
+        
         preRSI = df["rsi14"].iloc[-2]
         lastRSI = df["rsi14"].iloc[-1]
+        txtTrend = ""
+        if (lastRSI < 40 and preRSI > lastRSI):
+            txtTrend = "\nกำลังปรับตัวลง"
+
+        elif (lastRSI > 60 and preRSI < lastRSI):
+            txtTrend = "\nกำลังปรับตัวขึ้น"
+        
+        else:
+            txtTrend = "\กำลังลอยตัว"
+
+        msg += txtTrend
+        msg += f"\nอัตราการเทรดชนะ: {win_rate:.2f}%\nTimeframe: {timeFrame}"
+        
         df.to_csv(f"{EXPORT_DATA_DIR}/{symbol}.csv")
         plt.savefig(f"{EXPORT_DATA_DIR}/{symbol}.png", bbox_inches='tight')
         print(msg)
@@ -151,44 +164,11 @@ def plot_data(exchange, symbol, df, timeFrame, short=9, long=21, longTerm=50, li
         pass
 
 
-SYMBOLS = [
-    "XMR",
-    "CAKE",
-    "ALGO",
-    "XLM",
-    "TRX",
-    "EOS",
-    "BAT",
-    "OP",
-    "ATOM",
-    "GALA",
-    "KDA",
-    "NEAR",
-    "IMX",
-    "SIX",
-    "1INCH",
-    "BTC",
-    "ETH",
-    "XRP",
-    "BNB",
-    "SOL",
-    "MATIC",
-    "ADA",
-    "APE",
-    "AXS",
-    "LINK",
-    "LTC",
-    "BCH",
-    "DOGE",
-    "DOT",
-    "KUB",
-    "KCS",
-    "SAND",
-    "MANA"]
+SYMBOLS = ["OP","NEAR","BTC","ETH","XRP","BNB","SOL","MATIC","ADA","APE","LINK","LTC","BCH","DOGE","DOT","KUB","KCS","SAND", "XLM"]
 
 def kucoin():
     # ดึงข้อมูลเกี่ยวกับราคาที่ต้องการ
-    TIMEFRAME = "30min"
+    TIMEFRAME = "1hour"
     SYMBOLS.sort()
     for symbol in SYMBOLS:
         dte = datetime.now()
@@ -212,7 +192,7 @@ def kucoin():
                 df = df.iloc[::-1]
                 # กำหนดการพล็อตกราฟแท่งเทียนและเส้น EMA และเส้น RSI
                 df.set_index('time', inplace=True)
-                plot_data("KUCOIN", symbol, df, TIMEFRAME,12,26,200, 'BfTqtBO0kuo5mqneTdBoe5ktUAnxYrHIoaWhLRcBTwj')
+                plot_data("KUCOIN", symbol, df, TIMEFRAME,9,21,50, 'BfTqtBO0kuo5mqneTdBoe5ktUAnxYrHIoaWhLRcBTwj')
         except:
             pass
 
@@ -223,7 +203,7 @@ def bitkub_kline():
     SYMBOLS.sort()
     for symbol in SYMBOLS:
         dte = datetime.now()
-        startDte = int(datetime.timestamp(dte - timedelta(days=10)))
+        startDte = int(datetime.timestamp(dte - timedelta(days=5)))
         endDte = int(datetime.timestamp(dte))
         try:
             for symbol in SYMBOLS:
@@ -264,5 +244,5 @@ def bitkub_kline():
             pass
 
 if __name__ == '__main__':
+    # bitkub_kline()
     kucoin()
-    bitkub_kline()
