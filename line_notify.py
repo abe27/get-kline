@@ -127,6 +127,7 @@ def get_candlestick_data(**kwargs):
     df.to_csv(f"export/kucoin/{SYMBOL}/{SYMBOL}.csv")
 
     ### กลยุทธิ์
+    msg = ""
     isNotification = "EMA: ไม่ตัดกัน"
     crossover_points = find_ema_crossover(df,emaShort,emaLong)
     point = len(crossover_points)
@@ -136,29 +137,28 @@ def get_candlestick_data(**kwargs):
         # print(f"{SYMBOL} Crossover Last Points: {dte.strftime('%Y-%m-%d')}::: {d.strftime('%Y-%m-%d')}")
         if dte.strftime('%Y-%m-%d') == d.strftime('%Y-%m-%d'):
             isNotification = f"EMA: ตัดกันที่ {dte.strftime('%Y-%m-%d')}"
+            prevRSI = int(df["rsi14"].iloc[-2])
+            lastRSI = int(df["rsi14"].iloc[-1])
+            if lastRSI > 60 and prevRSI < lastRSI:
+                msg = f"{SYMBOL} RSI: {prevRSI}:{lastRSI} กำลังปรับตัวขึ้น"
 
-    msg = ""
-    prevRSI = int(df["rsi14"].iloc[-2])
-    lastRSI = int(df["rsi14"].iloc[-1])
-    if lastRSI > 60 and prevRSI < lastRSI:
-        msg = f"{SYMBOL} RSI: {prevRSI}:{lastRSI} กำลังปรับตัวขึ้น"
+            if lastRSI < 40 and prevRSI > lastRSI:
+                msg = f"{SYMBOL} RSI: {prevRSI}:{lastRSI} กำลังปรับตัวลง"
 
-    if lastRSI < 40 and prevRSI > lastRSI:
-        msg = f"{SYMBOL} RSI: {prevRSI}:{lastRSI} กำลังปรับตัวลง"
+            else:
+                if prevRSI < lastRSI:
+                    msg = f"{SYMBOL} RSI: {prevRSI}:{lastRSI} กำลังปรับตัวขึ้น"
 
-    else:
-        if prevRSI < lastRSI:
-            msg = f"{SYMBOL} RSI: {prevRSI}:{lastRSI} กำลังปรับตัวขึ้น"
+                elif prevRSI > lastRSI:
+                    msg = f"{SYMBOL} RSI: {prevRSI}:{lastRSI} กำลังปรับตัวลง"
 
-        elif prevRSI > lastRSI:
-            msg = f"{SYMBOL} RSI: {prevRSI}:{lastRSI} กำลังปรับตัวลง"
+                else:
+                    msg = f"{SYMBOL} RSI: {prevRSI}:{lastRSI} กำลังลอยตัว"
 
-        else:
-            msg = f"{SYMBOL} RSI: {prevRSI}:{lastRSI} กำลังลอยตัว"
-
-    msg += f" {isNotification}"
+            msg += f" {isNotification}"
+            send_line_notification(line_token="BfTqtBO0kuo5mqneTdBoe5ktUAnxYrHIoaWhLRcBTwj",message=msg,image_path=image_path)
+            
     print(msg)
-    send_line_notification(line_token="BfTqtBO0kuo5mqneTdBoe5ktUAnxYrHIoaWhLRcBTwj",message=msg,image_path=image_path)
     return df
 
 # ตัวอย่างการใช้งาน
