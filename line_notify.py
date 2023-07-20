@@ -135,7 +135,7 @@ def get_candlestick_data(**kwargs):
         d = datetime.now()
         dte = df.index[point-1]
         # print(f"{SYMBOL} Crossover Last Points: {dte.strftime('%Y-%m-%d')}::: {d.strftime('%Y-%m-%d')}")
-        if dte.strftime('%Y-%m-%d') == d.strftime('%Y-%m-%d'):
+        if dte.strftime('%Y-%m-%d %H') == d.strftime('%Y-%m-%d %H'):
             isNotification = f"EMA: ตัดกันที่ {dte.strftime('%Y-%m-%d')}"
             prevRSI = int(df["rsi14"].iloc[-2])
             lastRSI = int(df["rsi14"].iloc[-1])
@@ -166,7 +166,7 @@ emaShort = 9
 emaLong = 20
 
 
-SYMBOLS = ["OP","NEAR","BTC","ETH","XRP","BNB","SOL","MATIC","ADA","LTC","BCH","DOT"]
+SYMBOLS = ["ATOM","NEAR","BTC","ETH","XRP","BNB","SOL","MATIC","ADA","LTC","BCH","DOT","XMR"]
 def kucoin():
     # Type of candlestick patterns: 1min, 3min, 5min, 15min, 30min, 1hour, 2hour, 4hour, 6hour, 8hour, 12hour, 1day, 1week
     # ดึงข้อมูลเกี่ยวกับราคาที่ต้องการ
@@ -201,3 +201,7 @@ def kucoin():
 
 if __name__ == "__main__":
     kucoin()
+    try:
+        shutil.rmtree("export")
+    except:
+        pass
